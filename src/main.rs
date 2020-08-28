@@ -69,7 +69,12 @@ fn main() -> io::Result<()> {
             ))
         }
     }
-    let entries: Vec<File_info> = fs::read_dir(&args[1])?
+    let file_iterator = fs::read_dir(&args[1]);
+    match file_iterator {
+        Err(_e) => return Err(io::Error::new(io::ErrorKind::Other, "Directory not found")),
+        Ok(_) => (),
+    }
+    let entries: Vec<File_info> = file_iterator?
         .map(|res| res.map(|e| e.path()))
         .map(|ent| {
             let ent = ent.unwrap();
