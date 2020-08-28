@@ -7,8 +7,8 @@ use std::{env, fmt, fs, io};
 /// B is isize to display -1 for files which can't be read
 enum Size_t {
     B(isize),
-    KB(usize),
-    MB(usize),
+    KB(f32),
+    MB(f32),
 }
 
 impl Default for Size_t {
@@ -21,15 +21,16 @@ impl fmt::Display for Size_t {
         match self {
             Size_t::B(n) => {
                 let out = format!("{} B", n);
-                write!(f, "{}", String::from(out))
+                f.pad(&out)
             }
             Size_t::KB(n) => {
-                let out = format!("{} KB", n);
-                write!(f, "{}", String::from(out))
+                let out = format!("{:.2} KB", n);
+                f.pad(&out)
+                //write!(f, "{}", String::from(out))
             }
             Size_t::MB(n) => {
-                let out = format!("{} MB", n);
-                write!(f, "{}", String::from(out))
+                let out = format!("{:.2} MB", n);
+                f.pad(&out)
             }
         }
     }
@@ -83,11 +84,11 @@ fn main() -> io::Result<()> {
                     let sz = match sz {
                         d if d < 1024 => Size_t::B(d as isize),
                         d if d > 1024 && d < (1024 * 1024 - 1) => {
-                            let f = (d as f32 / 1024.0) as usize;
+                            let f = d as f32 / 1024.0;
                             Size_t::KB(f)
                         }
                         d if d > 1024 * 1024 => {
-                            let f = (d as f32 / (1024.0 * 1024.0)) as usize;
+                            let f = d as f32 / (1024.0 * 1024.0);
                             Size_t::MB(f)
                         }
                         _ => Size_t::B(0),
