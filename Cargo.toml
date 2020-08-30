@@ -1,5 +1,5 @@
 [package]
-name = "file_reads"
+name = "list_dirs"
 version = "0.1.0"
 authors = ["SurajPatil44"]
 edition = "2018"

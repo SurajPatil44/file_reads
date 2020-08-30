@@ -10,7 +10,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "file_reads"
+name = "list_dirs"
 version = "0.1.0"
 dependencies = [
  "ansi_term",
