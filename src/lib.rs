@@ -58,6 +58,39 @@ pub struct File_info {
     //permission :
 }
 
+#[inline]
+fn get_file_type(is_dir: bool) -> f_type {
+    match is_dir {
+        true => f_type::Dir,
+        false => f_type::File,
+    }
+}
+
+#[inline]
+fn handle_error(kind: io::ErrorKind) -> String {
+    match kind {
+        io::ErrorKind::PermissionDenied => format!("{}", Red.paint("Access is denied")),
+        io::ErrorKind::Other => format!("{}", Red.paint("File in use")),
+        _ => format!("{}", Red.paint("some unknown error")),
+    }
+}
+
+#[inline]
+fn get_file_size(sz: usize) -> Size_t {
+    match sz {
+        d if d < 1024 => Size_t::B(d as isize),
+        d if d > 1024 && d < (1024 * 1024 - 1) => {
+            let f = d as f32 / 1024.0;
+            Size_t::KB(f)
+        }
+        d if d > 1024 * 1024 => {
+            let f = d as f32 / (1024.0 * 1024.0);
+            Size_t::MB(f)
+        }
+        _ => Size_t::B(-1),
+    }
+}
+
 pub fn run(path: &str) -> Result<Vec<File_info>, io::Error> {
     let file_iterator = fs::read_dir(path);
     match file_iterator {
@@ -71,24 +104,8 @@ pub fn run(path: &str) -> Result<Vec<File_info>, io::Error> {
             let md = fs::metadata(&ent);
             match md {
                 Ok(md) => {
-                    let ft = match md.is_dir() {
-                        true => f_type::Dir,
-                        false => f_type::File,
-                    };
-                    let sz = md.len() as usize;
-                    let sz = match sz {
-                        d if d < 1024 => Size_t::B(d as isize),
-                        d if d > 1024 && d < (1024 * 1024 - 1) => {
-                            let f = d as f32 / 1024.0;
-                            Size_t::KB(f)
-                        }
-                        d if d > 1024 * 1024 => {
-                            let f = d as f32 / (1024.0 * 1024.0);
-                            Size_t::MB(f)
-                        }
-                        _ => Size_t::B(0),
-                    };
-
+                    let ft = get_file_type(md.is_dir());
+                    let sz = get_file_size(md.len() as usize);
                     File_info {
                         name: String::from(ent.file_name().unwrap().to_str().unwrap()),
                         size: sz,
@@ -96,13 +113,7 @@ pub fn run(path: &str) -> Result<Vec<File_info>, io::Error> {
                     }
                 }
                 Err(e) => {
-                    let error = match e.kind() {
-                        io::ErrorKind::PermissionDenied => {
-                            format!("{}", Red.paint("Access is denied"))
-                        }
-                        io::ErrorKind::Other => format!("{}", Red.paint("File in use")),
-                        _ => format!("{}", Red.paint("some unknown error")),
-                    };
+                    let error = handle_error(e.kind());
                     File_info {
                         name: String::from(error),
                         size: Size_t::B(-1),
