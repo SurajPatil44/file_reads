@@ -1,6 +1,5 @@
-use list_dirs::*;
 use std::{env, io};
-
+use list_dirs::printer;
 fn main() -> io::Result<()> {
     let mut args: Vec<String> = env::args().collect();
     match args.len() {
@@ -13,16 +12,6 @@ fn main() -> io::Result<()> {
             ))
         }
     }
-    let path = &args[1];
-    let entries = run(path)?;
-    let header = format!("{:<50} {:<8} {}", "Filename", "Size", "Type");
-    println!("{}", header);
-    println!("=================================================================================================================");
-    println!();
-    for f in entries {
-        println!("{:<50} {:<8} {:?}", f.name, f.size, f.typ);
-        println!("------------------------------------------------------------------------------------------------------------------");
-    }
-
+    printer(&args[1])?;
     Ok(())
 }

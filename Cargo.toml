@@ -1,10 +1,13 @@
 [package]
 name = "list_dirs"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["SurajPatil44"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[profile.dev]
+opt-level = 0
+debug = true
 
 [dependencies]
 ansi_term = "0.12.1"

@@ -1,11 +1,11 @@
-use ansi_term::Colour::Red;
+use ansi_term::Colour::{Cyan, Red};
 use std::{fmt, fs, io};
 
 #[allow(non_camel_case_types)]
 #[derive(Debug)]
 /// enum for size, will convert sizes to to B,KB and MB automatically
 /// B is isize to display -1 for files which can't be read
-pub enum Size_t {
+enum Size_t {
     B(isize),
     KB(f32),
     MB(f32),
@@ -41,7 +41,7 @@ impl fmt::Display for Size_t {
 #[derive(Debug)]
 /// file type either Directory or simple file
 /// NoType for file which are not accessible
-pub enum f_type {
+enum f_type {
     Dir,
     File,
     NoType,
@@ -51,10 +51,10 @@ pub enum f_type {
 #[derive(Debug)]
 /// struct which keeps all the file information
 //TODO : permission
-pub struct File_info {
-    pub name: String,
-    pub size: Size_t,
-    pub typ: f_type,
+struct File_info {
+    name: String,
+    size: Size_t,
+    typ: f_type,
     //permission :
 }
 
@@ -91,7 +91,15 @@ fn get_file_size(sz: usize) -> Size_t {
     }
 }
 
-pub fn run(path: &str) -> Result<Vec<File_info>, io::Error> {
+fn get_file_name(ent: &str, typ: &f_type) -> String {
+    match typ {
+        f_type::Dir => format!("{}", Cyan.paint(ent)),
+        f_type::File => format!("{}", ent),
+        _ => todo!(),
+    }
+}
+
+fn run(path: &str) -> Result<Vec<File_info>, io::Error> {
     let file_iterator = fs::read_dir(path);
     match file_iterator {
         Err(_e) => return Err(io::Error::new(io::ErrorKind::Other, "Directory not found")),
@@ -106,8 +114,9 @@ pub fn run(path: &str) -> Result<Vec<File_info>, io::Error> {
                 Ok(md) => {
                     let ft = get_file_type(md.is_dir());
                     let sz = get_file_size(md.len() as usize);
+                    let name = get_file_name(ent.file_name().unwrap().to_str().unwrap(), &ft);
                     File_info {
-                        name: String::from(ent.file_name().unwrap().to_str().unwrap()),
+                        name,
                         size: sz,
                         typ: ft,
                     }
@@ -124,4 +133,27 @@ pub fn run(path: &str) -> Result<Vec<File_info>, io::Error> {
         })
         .collect();
     Ok(entries)
+}
+
+pub fn printer(path: &str) -> Result<(), std::io::Error> {
+    let entries = run(path)?;
+    println!("total {}", entries.len());
+    for f in entries {
+        match f.typ {
+            f_type::Dir => println!("({:?}) {:<8} {:<50}", f.typ, f.size, f.name),
+            f_type::File => println!("{:<5} {:<8} {:<50}", ' ', f.size, f.name),
+            f_type::NoType => println!("{}", f.name),
+        }
+    }
+    /*
+    match entries {
+        Ok(ent) => {
+            for f in ent {
+                println!("{:<50} {:<8} {:?}", f.name, f.size, f.typ);
+            }
+        }
+        Err(_) => unreachable!(),
+    }
+    */
+    Ok(())
 }
