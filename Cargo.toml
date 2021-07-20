@@ -14,6 +14,6 @@ ansi_term = "0.12.1"
 #rayon = "1.4.0"
 
 [profile.release]
-opt-level = 'z'
+opt-level = 2
 lto = true
 panic = 'abort'

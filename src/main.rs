@@ -1,6 +1,8 @@
 use std::{env, io};
 use list_dirs::printer;
 fn main() -> io::Result<()> {
+    #[cfg(windows)]
+    let _enabled = ansi_term::enable_ansi_support();
     let mut args: Vec<String> = env::args().collect();
     match args.len() {
         1 => args.push(String::from(".")),
